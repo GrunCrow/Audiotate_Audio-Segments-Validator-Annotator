@@ -43,5 +43,6 @@ Use **Actions → Build desktop executables → Run workflow** to build the curr
 - A normal branch push does not publish a release; only a version tag matching `v*` runs the release job.
 - If the workflow has no run, confirm the workflow file is on the default branch, Actions are enabled for the repository, and the pushed ref matches the trigger.
 - If the Windows executable fails during Gradio import with a missing `gradio/blocks_events.pyc`, rebuild with the current `app_windows.spec`. Its `module_collection_mode={"gradio": "py"}` setting is required because Gradio reads component source files at import time.
+- If the executable crashes while generating Gradio API metadata with `TypeError: argument of type 'bool' is not iterable`, rebuild from the current source. Gradio 4.44.1 / gradio-client 1.3.0 can pass boolean JSON Schema values to a parser that expects dictionaries; `app.py` includes a compatibility guard for this case. The guard must be included in the executable.
 - If a build fails, inspect the failed platform job logs. Fix the source or packaging configuration, push the fix, and rerun the workflow for the same tag if the release has not completed.
 - Do not force-move a published version tag. Use a new version for a corrected release.

@@ -6,6 +6,22 @@ from tkinter import Tk, filedialog
 import gradio as gr
 import pandas as pd
 
+# Gradio 4.44.1's API-info generation can pass boolean JSON Schema values to
+# gradio_client.utils.get_type(), which assumes every schema is a dictionary.
+# Keep API metadata generation from failing on those valid JSON Schema values.
+from gradio_client import utils as gradio_client_utils
+
+_gradio_get_type = gradio_client_utils.get_type
+
+
+def _get_gradio_schema_type(schema):
+    if isinstance(schema, bool):
+        return "boolean"
+    return _gradio_get_type(schema)
+
+
+gradio_client_utils.get_type = _get_gradio_schema_type
+
 from audio_processing import (
     load_audio_files_from_folder, update_audio_and_image,
     extract_time_from_filename, extract_date_from_filename,
