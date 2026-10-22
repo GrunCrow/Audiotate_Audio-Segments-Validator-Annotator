@@ -16,6 +16,9 @@ a = Analysis(
     [os.path.join(SPECPATH, "app.py")], pathex=[SPECPATH], binaries=binaries, datas=datas,
     hiddenimports=hiddenimports, hookspath=[], hooksconfig={}, runtime_hooks=[],
     excludes=[], noarchive=False, optimize=0,
+    # Gradio inspects its component source during import; bytecode-only modules
+    # make it try to read a missing *.pyc as source in one-file builds.
+    module_collection_mode={"gradio": "py"},
 )
 pyz = PYZ(a.pure)
 exe = EXE(

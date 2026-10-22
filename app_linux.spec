@@ -16,6 +16,7 @@ a = Analysis(
     [os.path.join(SPECPATH, "app.py")], pathex=[SPECPATH], binaries=binaries, datas=datas,
     hiddenimports=hiddenimports, hookspath=[], hooksconfig={}, runtime_hooks=[],
     excludes=[], noarchive=False, optimize=0,
+    module_collection_mode={"gradio": "py"},
 )
 pyz = PYZ(a.pure)
 exe = EXE(
