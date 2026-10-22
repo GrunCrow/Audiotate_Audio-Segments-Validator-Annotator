@@ -1,5 +1,7 @@
 # Audiotate: Audio segments validator annotator
 
+<p align="center"><img src="assets/audiotate-logo.svg" alt="Audiotate — audio annotation" width="620"></p>
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
 [![Gradio](https://img.shields.io/badge/Framework-Gradio-orange.svg)](https://gradio.app/)
@@ -30,7 +32,7 @@ If you use this application, please cite the software:
   title        = {Audiotate: Audio segments validator annotator},
   year         = {2024},
   howpublished = {\url{https://github.com/SEANIMALMOVE/Audiotate_Audio-Segments-Validator-Annotator}},
-  note         = {Version 1.7.1, Accessed: YYYY-MM-DD},
+  note         = {Version 1.8, Accessed: YYYY-MM-DD},
   doi          = {10.5281/zenodo.19252332}
 }
 ```
@@ -45,16 +47,12 @@ A software manuscript is being prepared with the name *Audiotate: A GUI tool for
 
 <!--📄 [Read the article](https://doi.org/10.1016/j.ecoinf.2025.103254)-->
 
-- [Download Linux Installer](https://github.com/GrunCrow/BirdNET-PredictionsValidator-App/releases/download/v1.7/app_linux)
-- [Download Windows Installer](https://github.com/GrunCrow/BirdNET-PredictionsValidator-App/releases/download/v1.7/app_windows.exe)
-
 ## Table of Contents
 
 - [Features](#features)
 - [Getting Started](#getting-started)
   - [Executable Files](#executable-files)
-    - [Installation on Windows](#installation-on-windows)
-    - [Installation on Linux](#installation-on-linux)
+    - [Installing on Windows and Linux](#installing-on-windows-and-linux)
     - [Running the Application](#running-the-application)
   - [Repository use](#repository-use)
     - [Prerequisites](#prerequisites)
@@ -80,42 +78,39 @@ A software manuscript is being prepared with the name *Audiotate: A GUI tool for
 
 ### Executable Files
 
-You can run Audiotate directly without installation by downloading the standalone executable:
+Standalone builds bundle Python and the application libraries. Download the latest release for your operating system:
 
-- [⬇️ Download for Windows](https://github.com/SEANIMALMOVE/BirdNET-PredictionsValidator-App/releases/download/v1.7/app_windows.exe)
-- [⬇️ Download for Linux](https://github.com/SEANIMALMOVE/BirdNET-PredictionsValidator-App/releases/download/v1.7/app_linux)
-- [⬇️ Download Underwater Acousitcs App adaptation for Windows](https://github.com/SEANIMALMOVE/Audiotate_Audio-Segments-Validator-Annotator/releases/download/v1.7/Underwater.Acoustics.Validator.exe)
+- [Download for Windows (64-bit)](https://github.com/GrunCrow/Audiotate_Audio-Segments-Validator-Annotator/releases/latest/download/Audiotate-Windows-x86_64.exe)
+- [Download for Linux (64-bit)](https://github.com/GrunCrow/Audiotate_Audio-Segments-Validator-Annotator/releases/latest/download/Audiotate-Linux-x86_64.tar.gz)
+
+On Windows, double-click the downloaded `.exe`. On Linux, extract the `.tar.gz`, open a terminal in the extracted folder, and run:
+
+```bash
+chmod +x Audiotate-Linux-x86_64
+./Audiotate-Linux-x86_64
+```
+
+The Linux build targets x86_64 systems based on Ubuntu 22.04 or newer. Both builds open Audiotate in your default browser. Annotation history is stored in your user data folder, so launching from a read-only install directory is supported.
+
+Release executables are built on native Windows and Linux runners when a `v*` version tag is pushed. A manual build can also be started from the repository's **Actions → Build desktop executables** page.
 
 The following video tutorial demonstrates how to use the BirdNET Predictions Validator App executable file on a Windows system. It covers the installation process, how to run the application, and a walkthrough of the graphical user interface (GUI).
 
 [![Youtube Video Tutorial](assets/Docs/Images/video_tutorial.png)](https://youtu.be/BJYW3RqA2uQ)
 
-#### Installation on Windows
+#### Installing on Windows and Linux
 
-1. **Download the Installer**: Download the Windows installer from the [Download Windows Installer](https://github.com/GrunCrow/BirdNET-PredictionsValidator-App/releases/download/v1.3/app_windows.exe) link.
-2. **Run the Installer**: Double-click the downloaded `.exe` file and follow the on-screen instructions to install the application.
-
-#### Installation on Linux
-
-1. **Download the Installer**: Download the Linux installer from the [Download Linux Installer](https://github.com/GrunCrow/BirdNET-PredictionsValidator-App/releases/download/v1.3/app_linux) link.
-2. **Run the Installer**: Run the following command:
-
-```bash
-./app_linux
-```
+Follow the download and launch instructions above. These are standalone builds; Python and the application libraries do not need to be installed separately.
 
 #### Running the Application
 
-1. **Create a `Bird Vocalization Sample` Folder**: In the same directory as the executable file, create a folder named `Bird Vocalization Sample`. Within this folder, create subfolders named after each bird species (using the BirdNET format). Populate these subfolders with `.WAV` files containing sample vocalizations for each species. While this step is not mandatory, it is highly recommended as it allows the application to display sample vocalizations from your dataset alongside the data you are validating.
-2. **Select Audios Folder**: Choose the folder containing the audio files you want to validate.
-
-For a detailed walkthrough, please refer to the video tutorial above.
+Choose the folder containing the audio files to validate. To show reference clips, optionally select a folder containing one subfolder per label/species, with sample audio files in each subfolder.
 
 ### Repository use
 
 #### Prerequisites
 
-- Python 3.7 or higher
+- Python 3.11 or higher
 - Gradio
 - Pandas
 - Librosa (for audio processing)
@@ -126,14 +121,14 @@ For a detailed walkthrough, please refer to the video tutorial above.
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/GrunCrow/BirdNET-PredictionsValidator-App.git
-cd BirdNET-PredictionsValidator-App
+git clone https://github.com/GrunCrow/Audiotate_Audio-Segments-Validator-Annotator.git
+cd Audiotate_Audio-Segments-Validator-Annotator
 ```
 
 2. Install the required packages:
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-build.txt
 ```
 
 #### Usage

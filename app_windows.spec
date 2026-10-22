@@ -1,46 +1,28 @@
-# -*- mode: python ; coding: utf-8 -*-
-from PyInstaller.utils.hooks import collect_data_files
+# Build on Windows with: pyinstaller --clean --noconfirm app_windows.spec
+import os
+from PyInstaller.utils.hooks import collect_all
 
-datas = []
-datas += collect_data_files('gradio_client')
-datas += collect_data_files('gradio')
-datas += collect_data_files('librosa')
+datas, binaries, hiddenimports = [], [], ["tkinter.filedialog"]
+for package in (
+    "gradio", "gradio_client", "librosa", "soundfile", "matplotlib",
+    "scipy", "numba", "llvmlite", "pandas",
+):
+    package_datas, package_binaries, package_hiddenimports = collect_all(package)
+    datas += package_datas
+    binaries += package_binaries
+    hiddenimports += package_hiddenimports
 
 a = Analysis(
-    ['app.py', 'audio_processing.py', 'species_management.py', 'data_processing.py', 'ui_components.py', 'config.py'],
-    pathex=[],
-    binaries=[],
-    datas=datas,
-    hiddenimports=[],
-    hookspath=[],
-    hooksconfig={},
-    runtime_hooks=[],
-    excludes=[],
-    noarchive=False,
-    optimize=0,
-    module_collection_mode={
-        'gradio': 'py',  # Collect gradio package as source .py files
-},
+    [os.path.join(SPECPATH, "app.py")], pathex=[SPECPATH], binaries=binaries, datas=datas,
+    hiddenimports=hiddenimports, hookspath=[], hooksconfig={}, runtime_hooks=[],
+    excludes=[], noarchive=False, optimize=0,
 )
 pyz = PYZ(a.pure)
-
 exe = EXE(
-    pyz,
-    a.scripts,
-    a.binaries,
-    a.datas,
-    [],
-    name='app_windows',
-    debug=False,
-    bootloader_ignore_signals=False,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    runtime_tmpdir=None,
-    console=True,
-    disable_windowed_traceback=False,
-    argv_emulation=False,
-    target_arch=None,
-    codesign_identity=None,
-    entitlements_file=None,
+    pyz, a.scripts, a.binaries, a.datas, [],
+    name="Audiotate-Windows-x86_64", debug=False,
+    bootloader_ignore_signals=False, strip=False, upx=False,
+    console=True, disable_windowed_traceback=False,
+    argv_emulation=False, target_arch=None, codesign_identity=None,
+    entitlements_file=None, icon=os.path.join(SPECPATH, "assets", "audiotate.ico"),
 )

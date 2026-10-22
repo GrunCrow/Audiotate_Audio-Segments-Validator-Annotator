@@ -15,7 +15,7 @@ authors:
     affiliation: "University of Cádiz, Institute of Marine Research (INMAR), and International Campus of Excellence in Marine Science (CEIMAR)"
 repository-code: "https://github.com/SEANIMALMOVE/Audiotate_Audio-Segments-Validator-Annotator"
 license: "MIT"
-version: "1.7.1"
+version: "1.8"
 date-released: "2026-03-27"
 doi: "10.5281/zenodo.19252332"
 keywords:
@@ -37,7 +37,7 @@ preferred-citation:
       given-names: Laura
     - family-names: Pérez-Gimeno
       given-names: Neus
-  version: "1.7.1"
+  version: "1.8"
   repository-code: "https://github.com/SEANIMALMOVE/Audiotate_Audio-Segments-Validator-Annotator"
   license: "MIT"
   year: 2024

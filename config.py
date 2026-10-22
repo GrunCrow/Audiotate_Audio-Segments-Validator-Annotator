@@ -1,9 +1,27 @@
 # config.py
 
-CURRENT_VERSION = "v1.7"  # Replace with your current app version
-GITHUB_REPO = "GrunCrow/BirdNET-PredictionsValidator-App"  # Replace with your GitHub repo
-SUGGESTED_SPECIES_FILE = "suggested_species.txt"  # File to store suggested species
-COMMENTS_FILE = "comments.txt"
+"""Application configuration and per-user persistent state paths."""
+
+import os
+import sys
+from pathlib import Path
+
+CURRENT_VERSION = "v1.8"
+GITHUB_REPO = "GrunCrow/Audiotate_Audio-Segments-Validator-Annotator"
+
+# Frozen applications can be launched from a read-only install directory or a
+# random working directory. Keep annotation history in a writable user folder.
+if getattr(sys, "frozen", False):
+    if os.name == "nt":
+        _data_root = Path(os.environ.get("LOCALAPPDATA", Path.home())) / "Audiotate"
+    else:
+        _data_root = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share")) / "Audiotate"
+else:
+    _data_root = Path(__file__).resolve().parent
+_data_root.mkdir(parents=True, exist_ok=True)
+
+SUGGESTED_SPECIES_FILE = str(_data_root / "suggested_species.txt")
+COMMENTS_FILE = str(_data_root / "comments.txt")
 
 class Globals:
     _sample_audio_dir = ""

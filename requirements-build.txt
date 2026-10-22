@@ -1,0 +1,12 @@
+# Runtime dependencies and the cross-platform freezer used by the release workflow.
+gradio==4.44.1
+huggingface-hub<1.0
+librosa==0.10.2.post1
+matplotlib==3.9.2
+numpy==1.26.4
+pandas==2.2.3
+Pillow==10.4.0
+requests==2.32.3
+soundfile==0.12.1
+pyinstaller==6.11.1
+pyinstaller-hooks-contrib==2024.10

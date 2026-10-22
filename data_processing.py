@@ -1,87 +1,73 @@
-# data_processing.py
+"""CSV import and export helpers for annotation sessions."""
 
 from tkinter import Tk, filedialog
 
 import pandas as pd
 
-from ui_components import apply_styles
 
 def load_csv_and_copy_validation(audio_table):
-    """
-    Loads a CSV file, maps the validation values to the audio table, and applies color styling to the table rows based on the validation values.
-
-    Parameters:
-    - audio_table (DataFrame): The audio table to be updated.
-
-    Returns:
-    - audio_table (DataFrame): The updated audio table with validation values and color styling applied.
-    - message (str): A message indicating the result of the operation.
-    """
+    root = None
     try:
         root = Tk()
         root.attributes("-topmost", True)
-        root.withdraw()  # Hide the root window
+        root.withdraw()
         file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
-        if file_path:
-            df = pd.read_csv(file_path)
-            # Map per File from audio table and df and change Validation value to df value
-            audio_table = audio_table.merge(df[['File', 'Validation', 'Suggested Specie']], on='File', how='left')
-            
-            # If exists Validation_x and Validation_y, keep Validation from df
-            if 'Validation_x' in audio_table and 'Validation_y' in audio_table:
-                audio_table['Validation'] = audio_table['Validation_y']
-                audio_table = audio_table.drop(columns=['Validation_x', 'Validation_y'])
-            # If exists Suggested Specie_x and Suggested Specie_y, keep Suggested Specie from df
-            if 'Suggested Specie_x' in audio_table and 'Suggested Specie_y' in audio_table:
-                audio_table['Suggested Specie'] = audio_table['Suggested Specie_y']
-                audio_table = audio_table.drop(columns=['Suggested Specie_x', 'Suggested Specie_y'])
+        if not file_path:
+            return audio_table, "Load cancelled"
 
-            audio_table = audio_table.style.apply(apply_styles, axis=1)
-
-            root.destroy()
-            return audio_table, "Validation Values Loaded"  # Devuelve el DataFrame de Pandas con los valores de validación
+        saved = pd.read_csv(file_path)
+        missing = {"File", "Validation"}.difference(saved.columns)
+        if missing:
+            raise ValueError(f"CSV is missing required column(s): {', '.join(sorted(missing))}")
+        for column in ("Suggested Specie", "Comment"):
+            if column not in saved:
+                saved[column] = pd.NA
+        result = audio_table.copy()
+        if "Specie" in result and "Specie" in saved:
+            # Filenames often repeat across label folders, so use the label as
+            # part of the key whenever both exports provide it.
+            saved["_session_key"] = saved["Specie"].astype(str) + "\0" + saved["File"].astype(str)
+            result["_session_key"] = result["Specie"].astype(str) + "\0" + result["File"].astype(str)
+            keyed = saved.drop_duplicates("_session_key", keep="last").set_index("_session_key")
+            file_keyed = saved.drop_duplicates("File", keep="last").set_index("File")
         else:
+            keyed = saved.drop_duplicates("File", keep="last").set_index("File")
+            file_keyed = keyed
+        for column in ("Validation", "Suggested Specie", "Comment"):
+            if column not in result:
+                result[column] = -100 if column == "Validation" else pd.NA
+            values = result["_session_key"].map(keyed[column]) if "_session_key" in result else result["File"].map(keyed[column])
+            if "_session_key" in result:
+                values = values.combine_first(result["File"].map(file_keyed[column]))
+            result[column] = values.combine_first(result[column])
+        result = result.drop(columns=["_session_key"], errors="ignore")
+        return result, "Validation values loaded"
+    except Exception as exc:
+        return audio_table, f"ERROR: {exc}"
+    finally:
+        if root is not None:
             root.destroy()
-            return pd.DataFrame(), "ERROR: No Validation File"  # Devuelve un DataFrame vacío si se cancela la operación
-    except Exception as e:
-        return pd.DataFrame(), f"ERROR: {str(e)}"
-    
-    
+
+
 def save_table_to_csv(audio_table):
-    """
-    Saves the given audio table to a CSV file.
-
-    Parameters:
-    audio_table (pandas.DataFrame): The audio table to be saved.
-
-    Returns:
-    str: A message indicating the status of the save operation.
-    """
-
-    root = Tk()
-    root.attributes("-topmost", True)
-    root.withdraw()  # Hide the root window
-    file_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
-    if file_path:
-        # Save all columns but Path
-        table_to_save = audio_table.drop(columns=["Path"])
-        table_to_save.to_csv(file_path, index=False)
-        root.destroy()
+    root = None
+    try:
+        root = Tk()
+        root.attributes("-topmost", True)
+        root.withdraw()
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".csv", filetypes=[("CSV files", "*.csv")]
+        )
+        if not file_path:
+            return "Save operation cancelled"
+        audio_table.drop(columns=["Path"], errors="ignore").to_csv(file_path, index=False)
         return f"Validation saved to {file_path}"
-    else:
-        root.destroy()
-        return "Save operation cancelled"
-    
+    except Exception as exc:
+        return f"ERROR: Could not save validation: {exc}"
+    finally:
+        if root is not None:
+            root.destroy()
+
+
 def update_table_with_validation(audio_table):
-    """
-    Update the audio table with validation data.
-
-    Parameters:
-    audio_table (str): The path to the audio table.
-
-    Returns:
-    validation_df (pandas.DataFrame): The validation data loaded from the CSV file.
-    msg (str): A message indicating the status of the operation.
-    """
-    validation_df, msg = load_csv_and_copy_validation(audio_table)
-    return validation_df, msg
+    return load_csv_and_copy_validation(audio_table)

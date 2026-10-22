@@ -1,0 +1,77 @@
+name: Build desktop executables
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Windows x86_64
+            runner: windows-latest
+          - platform: Linux x86_64
+            runner: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-python@v7.1.0
+        if: runner.os == 'Windows'
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-build.txt
+      - name: Install Linux audio and Tk libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsndfile1 tk python3-tk python3-venv
+          python3 -m venv .build-venv
+      - name: Install Windows build dependencies
+        if: runner.os == 'Windows'
+        run: python -m pip install -r requirements-build.txt
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: .build-venv/bin/python -m pip install -r requirements-build.txt
+      - name: Build Windows executable
+        if: runner.os == 'Windows'
+        run: pyinstaller --clean --noconfirm app_windows.spec
+      - name: Build Linux executable
+        if: runner.os == 'Linux'
+        run: .build-venv/bin/pyinstaller --clean --noconfirm app_linux.spec
+      - name: Make Linux binary executable and archive it
+        if: runner.os == 'Linux'
+        run: |
+          chmod +x dist/Audiotate-Linux-x86_64
+          tar -czf dist/Audiotate-Linux-x86_64.tar.gz -C dist Audiotate-Linux-x86_64
+      - uses: actions/upload-artifact@v7.0.2
+        with:
+          name: Audiotate-${{ matrix.runner }}
+          path: dist/Audiotate*
+          if-no-files-found: error
+          retention-days: 30
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8.0.2
+        with:
+          path: release-assets
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v3.0.3
+        with:
+          generate_release_notes: true
+          files: release-assets/*

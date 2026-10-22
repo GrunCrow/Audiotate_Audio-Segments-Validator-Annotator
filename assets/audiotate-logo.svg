@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="190" viewBox="0 0 760 190" role="img" aria-labelledby="title desc">
+  <title id="title">Audiotate</title>
+  <desc id="desc">Audiotate audio annotation logo: a waveform and sound marker in a rounded square.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#14263d"/>
+      <stop offset="1" stop-color="#203b59"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="174" height="174" rx="42" fill="url(#bg)"/>
+  <path d="M34 98h13l10-23 17 47 18-67 20 91 19-65 14 37 10-20h14" fill="none" stroke="#66e0cf" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="139" cy="47" r="10" fill="#ff927e"/>
+  <text x="215" y="105" fill="#14263d" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="66" font-weight="750" letter-spacing="-2">Audiotate</text>
+  <text x="220" y="148" fill="#53708a" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="600" letter-spacing="3.2">AUDIO ANNOTATION</text>
+</svg>

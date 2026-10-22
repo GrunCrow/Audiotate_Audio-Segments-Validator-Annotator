@@ -41,21 +41,24 @@ def on_audio_selected(audio_table, evt: SelectData):
         if evt and evt.index:
             selected_row_index = evt.index[0]
             Globals.set_current_row_index(selected_row_index)
-            audio_table_styled = update_and_highlight_row(audio_table, None, from_audio_selected=True)
-            audio_path = audio_table["Path"][selected_row_index]
+            audio_path = audio_table.iloc[selected_row_index]["Path"]
             audio_path = os.path.normpath(audio_path)
             time = extract_time_from_filename(audio_path)
             date = extract_date_from_filename(audio_path)
-            species_name = audio_table["Specie"][selected_row_index]
+            species_name = audio_table.iloc[selected_row_index]["Specie"]
             Globals.set_current_specie_name(species_name)
-            suggested_specie = audio_table["Suggested Specie"][selected_row_index] if "Suggested Specie" in audio_table else None
-            comment = audio_table["Comment"][selected_row_index] if "Comment" in audio_table else None
+            suggested_specie = audio_table.iloc[selected_row_index]["Suggested Specie"] if "Suggested Specie" in audio_table else None
+            comment = audio_table.iloc[selected_row_index]["Comment"] if "Comment" in audio_table else None
+            if pd.isna(suggested_specie):
+                suggested_specie = None
+            if pd.isna(comment):
+                comment = "No Comments"
             audio_path, mel_spectrogram_image = update_audio_and_image(audio_path)
 
             sample_audio, sample_image = get_sample_audio_and_image()
 
-            return mel_spectrogram_image, audio_path, species_name, selected_row_index, sample_audio, sample_image, suggested_specie, audio_table_styled, date, time, comment
-    return None, None, "Specie", -1, None, None, None, None
+            return mel_spectrogram_image, audio_path, species_name, selected_row_index, sample_audio, sample_image, suggested_specie, audio_table, date, time, comment
+    return None, None, "Specie", -1, None, None, None, audio_table, None, None, "No Comments"
 
 def apply_styles(row):
     # Check the Validation value and apply color styling to the entire row
@@ -73,7 +76,11 @@ def apply_styles(row):
         return [''] * len(row)  # Default, no styling
 
 def get_sample_audio_and_image():
-    sample_audio_files = list_audio_files_from_folder(Globals.get_sample_audio_dir() + os.sep + Globals.get_current_specie_name())
+    sample_dir = Globals.get_sample_audio_dir()
+    species = Globals.get_current_specie_name()
+    if not sample_dir or not species:
+        return None, None
+    sample_audio_files = list_audio_files_from_folder(os.path.join(sample_dir, str(species)))
     if sample_audio_files:
         sample_audio, sample_image = update_audio_and_image(sample_audio_files[0])
     else:
@@ -119,17 +126,19 @@ def update_validation(audio_table, row_index, new_value, suggestedSpecie=None):
         audio_table.at[row_index, "Validation"] = new_value
         audio_table.at[row_index, "Suggested Specie"] = suggestedSpecie
         # return audio_table.style.apply(apply_styles, axis=1)
-        return update_and_highlight_row(audio_table, new_value)  # Verde para validación
+        return audio_table  # Verde para validación
     return audio_table
 
 def check_for_updates():
     url = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
-    response = requests.get(url)
-    if response.status_code == 200:
-        latest_release = response.json()
-        latest_version = latest_release["tag_name"]
-        if latest_version != CURRENT_VERSION:
-            return f"A new version {latest_version} is available! Please update."
+    try:
+        response = requests.get(url, timeout=3)
+        if response.status_code == 200:
+            latest_version = response.json().get("tag_name")
+            if latest_version and latest_version != CURRENT_VERSION:
+                return f"A new version {latest_version} is available! Please update."
+    except requests.RequestException:
+        pass
     return "You are using the latest version."
 
 def build_footer():

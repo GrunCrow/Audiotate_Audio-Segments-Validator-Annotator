@@ -46,19 +46,24 @@ def audio_to_mel_spectrogram(audio_clip):
     Returns:
     PIL.Image.Image: The mel spectrogram image.
     """
-    y, sr = librosa.load(audio_clip, sr=None)
-    fmin = 1
-    fmax = 32000
-    fig, ax = plt.subplots(figsize=(12, 6))
-    D = librosa.amplitude_to_db(librosa.stft(y), ref=np.max)
-    librosa.display.specshow(D, sr=sr, x_axis="time", y_axis="log", fmin=fmin, fmax=fmax, ax=ax)
-    ax.axis('off')
-    buf = BytesIO()
-    fig.savefig(buf, format='png', bbox_inches='tight', pad_inches=0)
-    plt.close(fig)
-    buf.seek(0)
-    image = Image.open(buf)
-    return image
+    y, sr = librosa.load(audio_clip, sr=None, mono=True)
+    if y.size == 0:
+        raise ValueError(f"Audio file is empty: {audio_clip}")
+    # A mel spectrogram is both cheaper to render and more useful for comparing
+    # tonal audio than plotting the linear-frequency STFT on a log axis.
+    mel = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128)
+    mel_db = librosa.power_to_db(mel, ref=np.max)
+    fig, ax = plt.subplots(figsize=(10, 4), constrained_layout=True)
+    try:
+        librosa.display.specshow(mel_db, sr=sr, x_axis="time", y_axis="mel", ax=ax)
+        ax.set(title="Mel spectrogram", xlabel="Time", ylabel="Frequency")
+        buf = BytesIO()
+        fig.savefig(buf, format="png", dpi=120)
+        buf.seek(0)
+        with Image.open(buf) as image:
+            return image.copy()
+    finally:
+        plt.close(fig)
 
 def list_audio_files_from_folder(folder_path):
     """
@@ -71,7 +76,13 @@ def list_audio_files_from_folder(folder_path):
         list: A list of full paths to the audio files found.
     """
 
-    return [str(file) for file in Path(folder_path).rglob('*') if file.suffix.lower() in ['.mp3', '.wav']]
+    folder = Path(folder_path)
+    if not folder.is_dir():
+        return []
+    return sorted(
+        (str(file) for file in folder.rglob('*') if file.is_file() and file.suffix.lower() in {'.mp3', '.wav'}),
+        key=str.casefold,
+    )
 
 def extract_time_from_filename(filename):
     try:
@@ -96,7 +107,7 @@ def extract_time_from_filename(filename):
         
         # Format the result as HH:MM:SS
         return f"{hours:02}:{minutes:02}:{seconds:02}"
-    except:
+    except (IndexError, ValueError, TypeError):
         return "Unknown Time"
 
 def extract_date_from_filename(filename):
@@ -110,7 +121,9 @@ def extract_date_from_filename(filename):
     str: The extracted date in YYYY-MM-DD format.
     """
     try:
-        date_str = filename.split('_')[1]  # Assuming the date is the second value separated by '_'
+        date_str = os.path.basename(filename).split('_')[1]  # date is second token
+        if len(date_str) != 8 or not date_str.isdigit():
+            return "Unknown Date"
         date_formatted = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:]}"  # Convert to YYYY-MM-DD format
         return date_formatted
     except IndexError:
