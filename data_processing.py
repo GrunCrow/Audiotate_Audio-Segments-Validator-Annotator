@@ -19,9 +19,12 @@ def load_csv_and_copy_validation(audio_table):
         missing = {"File", "Validation"}.difference(saved.columns)
         if missing:
             raise ValueError(f"CSV is missing required column(s): {', '.join(sorted(missing))}")
-        for column in ("Suggested Specie", "Comment"):
+        for column in ("Suggested Specie", "Comment", "Re-review"):
             if column not in saved:
-                saved[column] = pd.NA
+                saved[column] = False if column == "Re-review" else pd.NA
+        saved["Re-review"] = saved["Re-review"].fillna(False).map(
+            lambda value: value if isinstance(value, bool) else str(value).strip().lower() in {"true", "1", "yes", "y"}
+        )
         result = audio_table.copy()
         if "Specie" in result and "Specie" in saved:
             # Filenames often repeat across label folders, so use the label as
@@ -33,9 +36,9 @@ def load_csv_and_copy_validation(audio_table):
         else:
             keyed = saved.drop_duplicates("File", keep="last").set_index("File")
             file_keyed = keyed
-        for column in ("Validation", "Suggested Specie", "Comment"):
+        for column in ("Validation", "Suggested Specie", "Comment", "Re-review"):
             if column not in result:
-                result[column] = -100 if column == "Validation" else pd.NA
+                result[column] = -100 if column == "Validation" else (False if column == "Re-review" else pd.NA)
             values = result["_session_key"].map(keyed[column]) if "_session_key" in result else result["File"].map(keyed[column])
             if "_session_key" in result:
                 values = values.combine_first(result["File"].map(file_keyed[column]))
