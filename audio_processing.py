@@ -53,12 +53,15 @@ def audio_to_mel_spectrogram(audio_clip):
     # tonal audio than plotting the linear-frequency STFT on a log axis.
     mel = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128)
     mel_db = librosa.power_to_db(mel, ref=np.max)
-    fig, ax = plt.subplots(figsize=(10, 4), constrained_layout=True)
+    fig = plt.figure(figsize=(10, 4), frameon=False)
     try:
+        ax = fig.add_axes([0, 0, 1, 1])
         librosa.display.specshow(mel_db, sr=sr, x_axis="time", y_axis="mel", ax=ax)
-        ax.set(title="Mel spectrogram", xlabel="Time", ylabel="Frequency")
+        # Keep the axes' time/frequency mapping for the data, but show only the
+        # spectrogram pixels in the returned image (no title, labels, or ticks).
+        ax.set_axis_off()
         buf = BytesIO()
-        fig.savefig(buf, format="png", dpi=120)
+        fig.savefig(buf, format="png", dpi=120, pad_inches=0)
         buf.seek(0)
         with Image.open(buf) as image:
             return image.copy()

@@ -6,7 +6,7 @@ import os
 import sys
 from pathlib import Path
 
-CURRENT_VERSION = "v1.8"
+CURRENT_VERSION = "v1.8.4"
 GITHUB_REPO = "GrunCrow/Audiotate_Audio-Segments-Validator-Annotator"
 
 # Frozen applications can be launched from a read-only install directory or a

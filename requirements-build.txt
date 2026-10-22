@@ -1,5 +1,8 @@
 # Runtime dependencies and the cross-platform freezer used by the release workflow.
 gradio==4.44.1
+# Keep Gradio 4's legacy TemplateResponse call compatible with Starlette.
+fastapi==0.115.6
+starlette==0.41.3
 huggingface-hub<1.0
 librosa==0.10.2.post1
 matplotlib==3.9.2

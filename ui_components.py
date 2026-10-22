@@ -4,6 +4,7 @@ import os
 from gradio import Blocks, Markdown, SelectData, Row, HTML
 import requests
 import pandas as pd
+from packaging.version import InvalidVersion, Version
 
 from audio_processing import list_audio_files_from_folder
 
@@ -135,8 +136,15 @@ def check_for_updates():
         response = requests.get(url, timeout=3)
         if response.status_code == 200:
             latest_version = response.json().get("tag_name")
-            if latest_version and latest_version != CURRENT_VERSION:
-                return f"A new version {latest_version} is available! Please update."
+            if latest_version:
+                try:
+                    update_available = Version(latest_version.lstrip("v")) > Version(
+                        CURRENT_VERSION.lstrip("v")
+                    )
+                except InvalidVersion:
+                    update_available = latest_version != CURRENT_VERSION
+                if update_available:
+                    return f"A new version {latest_version} is available! Please update."
     except requests.RequestException:
         pass
     return "You are using the latest version."
